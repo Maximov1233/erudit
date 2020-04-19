@@ -24,12 +24,69 @@ body .container {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
+  background: #C6E3FF;
+  min-height: 100vh;
 }
 
-body .container .box {
-  width: 591px;
-  height: 591px;
-  border: 3px solid #000;
+body .container .letter {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  position: relative;
+  z-index: 99;
+  cursor: all-scroll;
+}
+
+body .container .letter p {
+  position: absolute;
+}
+
+body .container .letter p.letter-symbol {
+  font-size: 18px;
+}
+
+body .container .letter p.letter-index {
+  bottom: 3px;
+  right: 3px;
+  font-size: 14px;
+}
+
+body .container .hide {
+  display: none;
+}
+
+body .container .op-0 {
+  opacity: 0;
+}
+
+body .container .game {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -ms-flex-pack: distribute;
+      justify-content: space-around;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  min-height: 100vh;
+  -ms-flex-preferred-size: 70%;
+      flex-basis: 70%;
+}
+
+body .container .game .box {
+  width: 741px;
+  height: 741px;
+  border: 3px solid #3f3f3f;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -37,11 +94,48 @@ body .container .box {
       flex-wrap: wrap;
 }
 
-body .container .box-cell {
-  width: 35px;
-  height: 35px;
+body .container .game .box-cell {
+  width: 45px;
+  height: 45px;
   margin: 2px;
   background: #c2c2c2;
   border-radius: 6px;
+  font-size: 15px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+body .container .game .box-cell.hovered {
+  background-color: #d1d8e2;
+}
+
+body .container .game .available-letters {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+body .container .game .available-letters .letter {
+  margin: 0 10px;
+}
+
+body .container .sidebar {
+  -ms-flex-preferred-size: 50%;
+      flex-basis: 50%;
+  min-height: 100vh;
+  border-left: 10px solid #c2c2c2;
 }
 /*# sourceMappingURL=main.css.map */

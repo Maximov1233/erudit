@@ -15,20 +15,79 @@ body {
         display: flex;
         justify-content: center;
         align-items: center;
-        .box {
-            width: 591px;
-            height: 591px;
-            border: 3px solid #000;
+        background: #C6E3FF;
+        min-height: 100vh;
+        .letter {
             display: flex;
-            flex-wrap: wrap;
-            
-            &-cell {
-                width: 35px;
-                height: 35px;
-                margin: 2px;
-                background: rgb(194, 194, 194);
-                border-radius: 6px;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 99;
+            cursor: all-scroll;
+            p {
+                position: absolute;
+                &.letter-symbol {
+                    font-size: 18px;
+                }
+                &.letter-index {
+                    bottom: 3px;
+                    right: 3px;
+                    font-size: 14px;
+                }
             }
+        }
+        .hide {
+            display: none;
+        }
+
+        .op-0 {
+            opacity: 0;
+        }
+        
+        .game {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            min-height: 100vh;
+            flex-basis: 70%;
+            .box {
+                width: 741px;
+                height: 741px;
+                border: 3px solid rgb(63, 63, 63);
+                display: flex;
+                flex-wrap: wrap;
+                
+                &-cell {
+                    width: 45px;
+                    height: 45px;
+                    margin: 2px;
+                    background: rgb(194, 194, 194);
+                    border-radius: 6px;
+                    font-size: 15px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    &.hovered {
+                        background-color: #d1d8e2;
+                    }
+                    
+                }
+            }
+            .available-letters {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .letter {
+                    margin: 0 10px;
+                }
+            }
+        }
+        
+        .sidebar {
+            flex-basis: 50%;
+            min-height: 100vh;
+            border-left: 10px solid rgb(194, 194, 194);
         }
     }
 }
