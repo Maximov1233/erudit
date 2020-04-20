@@ -29,6 +29,7 @@ body .container {
 }
 
 body .container .letter {
+  background: url(../img/letter_bg.png) no-repeat center;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -39,6 +40,8 @@ body .container .letter {
       -ms-flex-align: center;
           align-items: center;
   position: relative;
+  width: 45px;
+  height: 45px;
   z-index: 99;
   cursor: all-scroll;
 }
@@ -49,9 +52,11 @@ body .container .letter p {
 
 body .container .letter p.letter-symbol {
   font-size: 18px;
+  font-weight: 700;
 }
 
 body .container .letter p.letter-index {
+  margin-top: 5px;
   bottom: 3px;
   right: 3px;
   font-size: 14px;
@@ -113,7 +118,27 @@ body .container .game .box-cell {
 }
 
 body .container .game .box-cell.hovered {
-  background-color: #d1d8e2;
+  opacity: 0.5;
+}
+
+body .container .game .box-cell.triple-word {
+  background: url(../img/triple-word.png) no-repeat center;
+}
+
+body .container .game .box-cell.double-word {
+  background: url(../img/double-word.png) no-repeat center;
+}
+
+body .container .game .box-cell.triple-letter {
+  background: url(../img/triple-letter.png) no-repeat center;
+}
+
+body .container .game .box-cell.double-letter {
+  background: url(../img/double-letter.png) no-repeat center;
+}
+
+body .container .game .box-cell.star {
+  background: url(../img/star.png) no-repeat center;
 }
 
 body .container .game .available-letters {
@@ -128,7 +153,9 @@ body .container .game .available-letters {
           align-items: center;
 }
 
-body .container .game .available-letters .letter {
+body .container .game .available-letters .slot {
+  width: 45px;
+  height: 45px;
   margin: 0 10px;
 }
 

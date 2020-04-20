@@ -1,5 +1,5 @@
 export const alphabet = {
-    'A': {
+    'А': {
         symbol: 'А',
         index: 10,
         amount: 1

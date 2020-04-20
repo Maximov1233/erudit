@@ -18,18 +18,24 @@ body {
         background: #C6E3FF;
         min-height: 100vh;
         .letter {
+            background: url(../img/letter_bg.png) no-repeat center;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
-            z-index: 99;
+            width: 45px;
+            height: 45px;
+            z-index: 99;   
             cursor: all-scroll;
             p {
                 position: absolute;
                 &.letter-symbol {
                     font-size: 18px;
+                    font-weight:700;
+                    // margin-bottom: 5px;
                 }
                 &.letter-index {
+                    margin-top: 5px;
                     bottom: 3px;
                     right: 3px;
                     font-size: 14px;
@@ -69,16 +75,32 @@ body {
                     justify-content: center;
                     align-items: center;
                     &.hovered {
-                        background-color: #d1d8e2;
+                        opacity: 0.5;
                     }
-                    
+                    &.triple-word {
+                        background: url(../img/triple-word.png) no-repeat center;
+                    }
+                    &.double-word {
+                        background: url(../img/double-word.png) no-repeat center;
+                    }
+                    &.triple-letter {
+                        background: url(../img/triple-letter.png) no-repeat center;
+                    }
+                    &.double-letter {
+                        background: url(../img/double-letter.png) no-repeat center;
+                    }
+                    &.star {
+                        background: url(../img/star.png) no-repeat center;
+                    }
                 }
             }
             .available-letters {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                .letter {
+                .slot {
+                    width: 45px;
+                    height: 45px;
                     margin: 0 10px;
                 }
             }
