@@ -168,7 +168,7 @@ const checkWord = (cell) => {
         for (let key in dictionary) {
             if (key === arrX.join('').trim(' ') || key === arrY.join('').trim(' ')) {
                 checker++;
-                definition = key + ': ' + dictionary[key].definition;
+                definition = key + '- ' + dictionary[key].definition;
                 setTimeout(() => {
                     alert(definition);
                 }, 300);
