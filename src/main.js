@@ -21,7 +21,7 @@ for (let i = 0; i < 225; i++) {
 }
 
 const boxCells = document.querySelectorAll('.box-cell'),
- submitButton = document.querySelector('.submit-button'),
+    submitButton = document.querySelector('.submit-button'),
     center = boxCells[112];
 
 center.classList.add('star');
@@ -104,7 +104,6 @@ const startingTiles = () => {
     startingTilesArr = shuffle(startingTilesArr);
 
     startingTilesArr.forEach((item) => {
-        console.log("item: " + item);
         const slot = document.createElement('div');
         slot.classList.add('slot');
         const letter = document.createElement('div');
@@ -119,70 +118,118 @@ const startingTiles = () => {
     });
 };
 
-const checkWord = (cell) => {
-    let x = cell.dataset.x,
-    y = cell.dataset.y,
-    definition,
-    checker = 0,
-    arrX = [];
+
+
+const twoLinesCheck = () => {
+    let arrX = [],
+        arrY = [],
+        x,
+        y;
+
     const tilesInGame = document.querySelectorAll('.box .letter');
 
-    if (tilesInGame.length === 1) {
-        if (!center.hasChildNodes()) {
-            console.log('wrong');
-        }
-    }
-
     tilesInGame.forEach((tile) => {
-        if (tile.parentNode.dataset.y === y) {
-            arrX.push(tile.children[0].textContent);
-            console.log(arrX);
-        }    
+        x = tile.parentNode.dataset.x;
+        y = tile.parentNode.dataset.y;
+        arrX.push(tile.parentNode.dataset.y);
+        arrY.push(tile.parentNode.dataset.x);
     });
-    
-    arrX = arrX.join('').toLowerCase();
 
-    for (let key in dictionary) {
-        if (key === arrX) {
-            checker++;
-            definition = dictionary[key].definition;
-            const hint = document.querySelector('.hints');
-            hint.style.color = 'green';
-            setTimeout(() => {
-                hint.style.color = '';
-            }, 200);
-        }
-    }
-    
-    console.log(checker);
+    // console.log(arrX);
+    // console.log(arrY);
+
+    const sameValues = (arr, coord) => {
+        const check = arr.every((elem) => {
+            return elem === coord;
+        });
+        return check;
+    };
+
+    let lineChecker = sameValues(arrX, y) + sameValues(arrY, x);
+
+    // console.log(lineChecker);
+
+    return [lineChecker, sameValues(arrX, y), sameValues(arrY, x), arrX, arrY];
 };
 
-// submitButton.addEventListener('click', checkWord);
+const checkWord = (cell) => {
+    let x = cell.dataset.x,
+        y = cell.dataset.y,
+        definition,
+        checker = 0,
+        arrX = [],
+        arrY = [];
+
+    const hint = document.querySelector('.hints');
+    const tilesInGame = document.querySelectorAll('.box .letter');
+
+
+    const defOutput = () => {
+        for (let key in dictionary) {
+            if (key === arrX.join('').trim(' ') || key === arrY.join('').trim(' ')) {
+                checker++;
+                definition = key + ': ' + dictionary[key].definition;
+                setTimeout(() => {
+                    alert(definition);
+                }, 300);
+                hint.style.color = 'green';
+            }
+        }
+    };
+
+    let twoLinesCheckArr = twoLinesCheck();
+
+    if (twoLinesCheckArr[0] !== 0) {
+        hint.style.color = '';
+        if (cell.classList.contains('box-cell')) {
+            boxCells.forEach((cell) => {
+                if (cell.dataset.y === y) {
+                    if (cell.hasChildNodes()) {
+                        arrX.push(cell.childNodes[0].childNodes[1].textContent.toLowerCase());
+                    } else {
+                        arrX.push(' ');
+                    }
+                }
+
+                if (cell.dataset.x === x) {
+                    if (cell.hasChildNodes()) {
+                        arrY.push(cell.childNodes[0].childNodes[1].textContent.toLowerCase());
+                    } else {
+                        arrY.push(' ');
+                    }
+                }
+            });
+
+            // console.log(arrX);
+            // console.log(arrY);
+
+            if (twoLinesCheckArr[0] !== 0 && center.hasChildNodes()) {
+                defOutput();
+            }
+        } else {
+            tilesInGame.forEach((tile) => {
+                if (twoLinesCheckArr[1] === true) {
+                    if (tile.dataset.y === twoLinesCheckArr[4[0]]) {
+                        arrX.push(tile.childNodes[1].textContent.toLowerCase());
+                    }
+                }
+                 else if (twoLinesCheckArr[2] === true) {
+                    if (tile.dataset.x === twoLinesCheckArr[5[0]]) {
+                        arrY.push(tile.childNodes[1].textContent.toLowerCase());
+                    }
+                }
+            });
+
+            if (twoLinesCheckArr[0] !== 0 && center.hasChildNodes()) {
+                defOutput();
+            }
+        }
+    } else {
+        hint.style.color = 'red';
+    }
+};
 
 startingTiles();
-
-// const checkArr = [];
-
-// console.log(firstLetters[getRandomIntInclusive(0, firstLetters.length - 1)]);
-
-// const isWord = (arr) => {
-//     let checker = 0;
-//     arr.forEach((subArr) => {
-//             subArr.join('');
-//             for (let key in dictionary) {
-//                 if (key === subArr) {
-//                     console.log(dictionary[key]);
-//                     checker++;
-//                 }
-//             } 
-//     });
-//     return checker;
-// };
-
-// const preventNoFirstMove = (arr) => {
-//     const checkWord = isWord(arr);
-//     return checkWord;
-// };
 
 const slots = document.querySelectorAll('.slot');
 
@@ -201,7 +248,6 @@ const dragEnd = function (letter) {
 };
 
 const dragOver = function (cell, evt) {
-
     evt.preventDefault();
 };
 
@@ -216,21 +262,31 @@ const dragLeave = function (cell) {
 };
 
 const dragDrop = function (cell, letter) {
-    if (!cell.hasChildNodes()) {
-        cell.append(letter);
-        console.log(letter);
-        cell.classList.remove('hovered');
+    // console.log(letter.parentNode);
+    if (letter.parentNode.classList.contains('box-cell')) {
+        if (!cell.hasChildNodes()) {
+            cell.append(letter);
+            cell.classList.remove('hovered');
+        } else {
+            cell.classList.remove('hovered');
+            return;
+        }
+        checkWord(cell);
     } else {
-        cell.classList.remove('hovered');
-        return;
+        if (!cell.hasChildNodes()) {
+            cell.append(letter);
+            cell.classList.remove('hovered');
+        } else {
+            cell.classList.remove('hovered');
+            return;
+        }
+        checkWord(letter.parentNode);
     }
-    checkWord(cell);
 };
 
 let letterUsed;
 
 letters.forEach(letter => {
-
     letter.addEventListener('dragstart', () => {
         letterUsed = letter;
         dragStart(letter);
