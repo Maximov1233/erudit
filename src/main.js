@@ -1,17 +1,20 @@
+// import
+
 import {
     dictionary
 } from './dictionary.js';
 import {
     alphabet
-} from './letters.js';
+} from './alphabet.js';
 
-const box = document.querySelector('.box'),
-    tripleWord = [0, 7, 14, 105, 119, 210, 224],
+// adding cells
+
+const tripleWord = [0, 7, 14, 105, 119, 210, 224],
     doubleLetter = [3, 11, 36, 38, 45, 52, 59, 92, 96, 98, 102, 108, 116, 122, 126, 128, 132, 165, 172, 179, 186, 188, 213, 221],
     doubleWord = [16, 28, 32, 42, 48, 56, 64, 70, 154, 160, 168, 176, 182, 192, 196, 208],
     tripleLetter = [20, 24, 76, 80, 84, 88, 136, 140, 144, 148, 200, 204];
 
-
+const box = document.querySelector('.box');
 
 for (let i = 0; i < 225; i++) {
     const boxCell = document.createElement('div');
@@ -20,11 +23,34 @@ for (let i = 0; i < 225; i++) {
     box.append(boxCell);
 }
 
-const boxCells = document.querySelectorAll('.box-cell'),
-    submitButton = document.querySelector('.submit-button'),
-    center = boxCells[112];
+let slotsLetters;
 
+const availableLetters = document.querySelector('.available-letters'),
+    boxCells = document.querySelectorAll('.box-cell'),
+    bagItems = document.querySelector('.bag-items'),
+    bagTitle = document.querySelector('.bag-title'),
+    bagModal = document.querySelector('.bag-modal__bg'),
+    submitButton = document.querySelector('.submit-button'),
+    bagClose = document.querySelector('.bag-close'),
+    center = boxCells[112];
 center.classList.add('star');
+
+// adding classes
+
+tripleWord.forEach((key) => {
+    boxCells[key].classList.add('triple-word');
+});
+doubleLetter.forEach((key) => {
+    boxCells[key].classList.add('double-letter');
+});
+doubleWord.forEach((key) => {
+    boxCells[key].classList.add('double-word');;
+});
+tripleLetter.forEach((key) => {
+    boxCells[key].classList.add('triple-letter');
+});
+
+// coordinates
 
 let x = 1,
     y = 1;
@@ -40,31 +66,45 @@ for (let i = 0; i < boxCells.length; i++) {
     }
 }
 
-tripleWord.forEach((key) => {
-    boxCells[key].classList.add('triple-word');
-});
-doubleLetter.forEach((key) => {
-    boxCells[key].classList.add('double-letter');
-});
-doubleWord.forEach((key) => {
-    boxCells[key].classList.add('double-word');;
-});
-tripleLetter.forEach((key) => {
-    boxCells[key].classList.add('triple-letter');
-});
+// functions
 
-// let letter = document.createElement('div');
-// letter.classList.add('letter');
-// letter.setAttribute("draggable", "true");
-// letter.innerHTML = `
-//     <img src="./img/letter_bg.png">
-//     <p class="letter-symbol">${alphabet['Р'].symbol}</p>
-//     <p class="letter-index">${alphabet['Р'].index}</p>
-// `;
+const fillingBag = () => {
+    for (let key in alphabet) {
+        const bagItem = document.createElement('div');
+        bagItem.classList.add('bag-item');
+        bagItem.innerHTML = `
+        <div class="letter">
+            <p class="letter-symbol">${alphabet[key].symbol}</p>
+            <p class="letter-index">${alphabet[key].index}</p>
+        </div>
+        <p class="amount">${alphabet[key].amount}</p>
+        `;
+        bagItems.append(bagItem);
+    }
+};
 
-const availableLetters = document.querySelector('.available-letters');
+fillingBag();
 
-const randomProperty = function (obj) {
+const tilesInBag = document.querySelectorAll('.bag-item .letter');
+
+const tilesBagChecker = (symbol) => {
+    let checker;
+    for (let i = 0; i < tilesInBag.length; i++) {
+        if (tilesInBag[i].childNodes[1].textContent === symbol) {
+            if (tilesInBag[i].parentNode.childNodes[3].textContent !== '0') {
+                // console.log(tilesInBag[i].parentNode.childNodes[3].textContent);
+                tilesInBag[i].parentNode.childNodes[3].textContent--;
+                checker = true;
+            } else {
+                checker = false;
+            }
+            break;
+        }
+    }
+    return checker;
+};
+
+const randomProperty = (obj) => {
     const keys = Object.keys(obj);
     return obj[keys[keys.length * Math.random() << 0]];
 };
@@ -84,6 +124,83 @@ const shuffle = (arr) => {
     return arr;
 }
 
+const appendingTiles = (arr) => {
+    let slots = document.querySelectorAll('.slot'),
+    letters = document.querySelector('.slot .letter');
+    console.log(arr);
+    if (slots.length === 0) {
+        arr.forEach((item) => {
+            const slot = document.createElement('div');
+            slot.classList.add('slot');
+            const letter = document.createElement('div');
+            letter.classList.add('letter');
+            letter.setAttribute('draggable', 'true');
+            letter.innerHTML = `
+                    <p class="letter-symbol">${alphabet[item].symbol}</p>
+                    <p class="letter-index">${alphabet[item].index}</p>
+                `;
+            slot.append(letter);
+            availableLetters.append(slot);
+        });
+    } else {
+        console.log(slots);
+
+        for (let i = 0; i < slots.length; i++) {
+            if (!slots[i].hasChildNodes()) {
+                const letter = document.createElement('div');
+                letter.classList.add('letter');
+                letter.setAttribute('draggable', 'true');
+                letter.innerHTML = `
+                    <p class="letter-symbol">${alphabet[arr[i]].symbol}</p>
+                    <p class="letter-index">${alphabet[arr[i]].index}</p>
+                `;
+                slots[i].append(letter);
+            }
+        }
+    }
+    slots = document.querySelectorAll('.slot'),
+    letters = document.querySelectorAll('.slot .letter');
+    slotsLetters = [slots, letters];
+    console.log(slotsLetters);
+    return slotsLetters;
+};
+
+const addingTilesIntoArr = (arr, isStart) => {
+    let emptyChecker = arr.every((elem) => {
+        return elem !== '';
+    });
+    if (isStart === true) {
+        while (arr.length !== 7) {
+            const symbol = randomProperty(alphabet).symbol;
+            if (tilesBagChecker(symbol) === true) {
+                // console.log(symbol);
+                // console.log(tilesBagChecker(symbol));
+                arr.push(symbol);
+            }
+        }
+        arr = shuffle(arr);
+    } else {
+        while (emptyChecker === false) {
+            emptyChecker = arr.every((elem) => {
+                return elem !== '';
+            });
+            console.log(emptyChecker);
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i] === '') {
+                    const symbol = randomProperty(alphabet).symbol;
+                    if (tilesBagChecker(symbol) === true) {
+                        arr.splice(i, 1, symbol);
+                        console.log(arr);
+                    }
+                }
+            }
+        }
+    }
+    console.log(arr);
+    let slotsLetters = appendingTiles(arr);
+    return slotsLetters;
+};
+
 const startingTiles = () => {
     let firstLetters = [];
 
@@ -95,30 +212,14 @@ const startingTiles = () => {
 
     let startingTilesArr = [...firstLetters[getRandomIntInclusive(0, firstLetters.length - 1)].toUpperCase()];
 
+    startingTilesArr.forEach((item) => {
+        tilesBagChecker(item);
+    });
+
     console.log(startingTilesArr);
 
-    while (startingTilesArr.length !== 7) {
-        startingTilesArr.push(randomProperty(alphabet).symbol);
-    }
-
-    startingTilesArr = shuffle(startingTilesArr);
-
-    startingTilesArr.forEach((item) => {
-        const slot = document.createElement('div');
-        slot.classList.add('slot');
-        const letter = document.createElement('div');
-        letter.classList.add('letter');
-        letter.setAttribute('draggable', "true");
-        letter.innerHTML = `
-            <p class="letter-symbol">${alphabet[item].symbol}</p>
-            <p class="letter-index">${alphabet[item].index}</p>
-        `;
-        slot.append(letter);
-        availableLetters.append(slot);
-    });
+    addingTilesIntoArr(startingTilesArr, true);
 };
-
-
 
 const twoLinesCheck = () => {
     let arrX = [],
@@ -134,9 +235,6 @@ const twoLinesCheck = () => {
         arrX.push(tile.parentNode.dataset.y);
         arrY.push(tile.parentNode.dataset.x);
     });
-
-    // console.log(arrX);
-    // console.log(arrY);
 
     const sameValues = (arr, coord) => {
         const check = arr.every((elem) => {
@@ -162,7 +260,6 @@ const checkWord = (cell) => {
 
     const hint = document.querySelector('.hints');
     const tilesInGame = document.querySelectorAll('.box .letter');
-
 
     const defOutput = () => {
         for (let key in dictionary) {
@@ -200,9 +297,6 @@ const checkWord = (cell) => {
                 }
             });
 
-            // console.log(arrX);
-            // console.log(arrY);
-
             if (twoLinesCheckArr[0] !== 0 && center.hasChildNodes()) {
                 defOutput();
             }
@@ -212,8 +306,7 @@ const checkWord = (cell) => {
                     if (tile.dataset.y === twoLinesCheckArr[4[0]]) {
                         arrX.push(tile.childNodes[1].textContent.toLowerCase());
                     }
-                }
-                 else if (twoLinesCheckArr[2] === true) {
+                } else if (twoLinesCheckArr[2] === true) {
                     if (tile.dataset.x === twoLinesCheckArr[5[0]]) {
                         arrY.push(tile.childNodes[1].textContent.toLowerCase());
                     }
@@ -231,11 +324,7 @@ const checkWord = (cell) => {
 
 startingTiles();
 
-const slots = document.querySelectorAll('.slot');
-
 // dragDrop
-
-const letters = document.querySelectorAll('.letter');
 
 const dragStart = function (letter) {
     setTimeout(() => {
@@ -262,7 +351,6 @@ const dragLeave = function (cell) {
 };
 
 const dragDrop = function (cell, letter) {
-    // console.log(letter.parentNode);
     if (letter.parentNode.classList.contains('box-cell')) {
         if (!cell.hasChildNodes()) {
             cell.append(letter);
@@ -284,17 +372,55 @@ const dragDrop = function (cell, letter) {
     }
 };
 
+let letters = document.querySelectorAll('.available-letters .letter'),
+    slots = document.querySelectorAll('.slot');
+
+submitButton.addEventListener('click', () => {
+    let slots = document.querySelectorAll('.slot'),
+        lettersArr = [];
+
+    slots.forEach((slot) => {
+        // console.log(slot.hasChildNodes());
+        if (slot.hasChildNodes()) {
+            lettersArr.push(slot.childNodes[0].childNodes[1].textContent);
+        } else {
+            lettersArr.push('');
+        }
+    });
+    console.log(lettersArr);
+    addingTilesIntoArr(lettersArr);
+});
+
 let letterUsed;
 
-letters.forEach(letter => {
-    letter.addEventListener('dragstart', () => {
-        letterUsed = letter;
-        dragStart(letter);
+(() => setInterval(() => {
+    letters = document.querySelectorAll('.slot .letter'),
+    slots = document.querySelectorAll('.slot');
+    letters.forEach(letter => {
+        letter.addEventListener('dragstart', () => {
+            letterUsed = letter;
+            dragStart(letter);
+        });
+        letter.addEventListener('dragend', () => {
+            dragEnd(letter);
+        });
     });
-    letter.addEventListener('dragend', () => {
-        dragEnd(letter);
+    
+    slots.forEach(slot => {
+        slot.addEventListener('dragover', () => {
+            dragOver(slot, event);
+        });
+        slot.addEventListener('dragenter', () => {
+            dragEnter(slot, event);
+        });
+        slot.addEventListener('dragleave', () => {
+            dragLeave(slot);
+        });
+        slot.addEventListener('drop', () => {
+            dragDrop(slot, letterUsed);
+        });
     });
-});
+}, 0))();
 
 boxCells.forEach(cell => {
     cell.addEventListener('dragover', () => {
@@ -311,17 +437,10 @@ boxCells.forEach(cell => {
     });
 });
 
-slots.forEach(slot => {
-    slot.addEventListener('dragover', () => {
-        dragOver(slot, event);
-    });
-    slot.addEventListener('dragenter', () => {
-        dragEnter(slot, event);
-    });
-    slot.addEventListener('dragleave', () => {
-        dragLeave(slot);
-    });
-    slot.addEventListener('drop', () => {
-        dragDrop(slot, letterUsed);
-    });
+bagTitle.addEventListener('click', () => {
+    bagModal.classList.remove('hide');
+});
+
+bagClose.addEventListener('click', () => {
+    bagModal.classList.add('hide');
 });
