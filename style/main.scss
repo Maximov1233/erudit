@@ -80,6 +80,7 @@ body {
                     display: flex;
                     justify-content: center;
                     align-items: center;
+                    position: relative;
 
                     &.hovered {
                         opacity: 0.5;
@@ -103,6 +104,19 @@ body {
 
                     &.star {
                         background: url(../img/star.png) no-repeat center;
+                    }
+
+                    .word-indicator {
+                        width: 20px;
+                        height: 20px;
+                        border-radius: 50%;
+                        background: red;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        position: absolute;
+                        bottom: -10px;
+                        right: -10px;
                     }
                 }
             }

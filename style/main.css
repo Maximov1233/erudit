@@ -115,6 +115,7 @@ body .container .game .box-cell {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
+  position: relative;
 }
 
 body .container .game .box-cell.hovered {
@@ -139,6 +140,25 @@ body .container .game .box-cell.double-letter {
 
 body .container .game .box-cell.star {
   background: url(../img/star.png) no-repeat center;
+}
+
+body .container .game .box-cell .word-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: red;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  position: absolute;
+  bottom: -10px;
+  right: -10px;
 }
 
 body .container .game .available-letters {

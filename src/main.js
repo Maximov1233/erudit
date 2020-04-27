@@ -23,17 +23,28 @@ for (let i = 0; i < 225; i++) {
     box.append(boxCell);
 }
 
-let slotsLetters;
-
 const availableLetters = document.querySelector('.available-letters'),
     boxCells = document.querySelectorAll('.box-cell'),
     bagItems = document.querySelector('.bag-items'),
     bagTitle = document.querySelector('.bag-title'),
     bagModal = document.querySelector('.bag-modal__bg'),
     submitButton = document.querySelector('.submit-button'),
+    hint = document.querySelector('.hints'),
     bagClose = document.querySelector('.bag-close'),
     center = boxCells[112];
+
 center.classList.add('star');
+
+let points = 0;
+
+
+
+const emptyChecker = (arr) => {
+    let checker = arr.every((elem) => {
+        return elem !== ' ';
+    });
+    return checker;
+};
 
 // adding classes
 
@@ -92,7 +103,6 @@ const tilesBagChecker = (symbol) => {
     for (let i = 0; i < tilesInBag.length; i++) {
         if (tilesInBag[i].childNodes[1].textContent === symbol) {
             if (tilesInBag[i].parentNode.childNodes[3].textContent !== '0') {
-                // console.log(tilesInBag[i].parentNode.childNodes[3].textContent);
                 tilesInBag[i].parentNode.childNodes[3].textContent--;
                 checker = true;
             } else {
@@ -125,9 +135,8 @@ const shuffle = (arr) => {
 }
 
 const appendingTiles = (arr) => {
-    let slots = document.querySelectorAll('.slot'),
-    letters = document.querySelector('.slot .letter');
-    console.log(arr);
+    let slots = document.querySelectorAll('.slot');
+    // console.log(arr);
     if (slots.length === 0) {
         arr.forEach((item) => {
             const slot = document.createElement('div');
@@ -136,15 +145,13 @@ const appendingTiles = (arr) => {
             letter.classList.add('letter');
             letter.setAttribute('draggable', 'true');
             letter.innerHTML = `
-                    <p class="letter-symbol">${alphabet[item].symbol}</p>
-                    <p class="letter-index">${alphabet[item].index}</p>
-                `;
+                <p class="letter-symbol">${alphabet[item].symbol}</p>
+                <p class="letter-index">${alphabet[item].index}</p>
+            `;
             slot.append(letter);
             availableLetters.append(slot);
         });
     } else {
-        console.log(slots);
-
         for (let i = 0; i < slots.length; i++) {
             if (!slots[i].hasChildNodes()) {
                 const letter = document.createElement('div');
@@ -158,47 +165,32 @@ const appendingTiles = (arr) => {
             }
         }
     }
-    slots = document.querySelectorAll('.slot'),
-    letters = document.querySelectorAll('.slot .letter');
-    slotsLetters = [slots, letters];
-    console.log(slotsLetters);
-    return slotsLetters;
 };
 
 const addingTilesIntoArr = (arr, isStart) => {
-    let emptyChecker = arr.every((elem) => {
-        return elem !== '';
-    });
+
     if (isStart === true) {
         while (arr.length !== 7) {
             const symbol = randomProperty(alphabet).symbol;
             if (tilesBagChecker(symbol) === true) {
-                // console.log(symbol);
-                // console.log(tilesBagChecker(symbol));
                 arr.push(symbol);
             }
         }
         arr = shuffle(arr);
     } else {
-        while (emptyChecker === false) {
-            emptyChecker = arr.every((elem) => {
-                return elem !== '';
-            });
-            console.log(emptyChecker);
+        while (emptyChecker(arr) === false) {
             for (let i = 0; i < arr.length; i++) {
                 if (arr[i] === '') {
                     const symbol = randomProperty(alphabet).symbol;
                     if (tilesBagChecker(symbol) === true) {
                         arr.splice(i, 1, symbol);
-                        console.log(arr);
+                        // console.log(arr);
                     }
                 }
             }
         }
     }
-    console.log(arr);
-    let slotsLetters = appendingTiles(arr);
-    return slotsLetters;
+    appendingTiles(arr);
 };
 
 const startingTiles = () => {
@@ -245,10 +237,20 @@ const twoLinesCheck = () => {
 
     let lineChecker = sameValues(arrX, y) + sameValues(arrY, x);
 
-    // console.log(lineChecker);
-
     return [lineChecker, sameValues(arrX, y), sameValues(arrY, x), arrX, arrY];
 };
+
+const solidWord = (arr) => {
+    if (arr.join('').trim('').length >= 3) {
+        arr = [...arr.join('').trim('')];
+        return emptyChecker(arr);
+    } else {
+        return true;
+    }
+};
+
+const wordIndicator = document.createElement('div');
+wordIndicator.classList.add('word-indicator');
 
 const checkWord = (cell) => {
     let x = cell.dataset.x,
@@ -256,70 +258,140 @@ const checkWord = (cell) => {
         definition,
         checker = 0,
         arrX = [],
-        arrY = [];
+        arrY = [],
+        wordX,
+        wordY;
 
-    const hint = document.querySelector('.hints');
-    const tilesInGame = document.querySelectorAll('.box .letter');
+    points = 0;
 
     const defOutput = () => {
         for (let key in dictionary) {
             if (key === arrX.join('').trim(' ') || key === arrY.join('').trim(' ')) {
                 checker++;
                 definition = key + '- ' + dictionary[key].definition;
-                setTimeout(() => {
-                    alert(definition);
-                }, 300);
-                hint.style.color = 'green';
+                console.log(definition);
+                wordIndicator.style.background = 'green';
             }
         }
     };
 
     let twoLinesCheckArr = twoLinesCheck();
 
-    if (twoLinesCheckArr[0] !== 0) {
-        hint.style.color = '';
-        if (cell.classList.contains('box-cell')) {
-            boxCells.forEach((cell) => {
-                if (cell.dataset.y === y) {
-                    if (cell.hasChildNodes()) {
-                        arrX.push(cell.childNodes[0].childNodes[1].textContent.toLowerCase());
-                    } else {
-                        arrX.push(' ');
-                    }
+    const addingWordIndicator = (word) => {
+        wordIndicator.innerHTML = `
+        <p>${points}</p>
+        `;
+        word.append(wordIndicator);
+    };
+
+    if (twoLinesCheckArr[0] !== 0) { // word is written in one line
+        wordIndicator.style.background = '';
+
+        if (cell.classList.contains('box-cell')) { // letter was put in box cell
+            boxCells.forEach((item) => {
+                let itemSymbol,
+                    itemLetter,
+                    itemIndex;
+
+                if (item.hasChildNodes()) {
+                    itemLetter = item.childNodes[0],
+                        itemSymbol = item.childNodes[0].childNodes[1].textContent.toLowerCase(),
+                        itemIndex = item.childNodes[0].childNodes[3].textContent;
+                } else {
+                    itemSymbol = ' ';
                 }
 
-                if (cell.dataset.x === x) {
-                    if (cell.hasChildNodes()) {
-                        arrY.push(cell.childNodes[0].childNodes[1].textContent.toLowerCase());
+                if (item.dataset.y === y && item.dataset.x === x) {
+                    arrX.push(itemSymbol);
+                    arrY.push(itemSymbol);
+                    if (solidWord(arrX) && solidWord(arrY)) {
+                        if (item.hasChildNodes()) {
+                            points += parseInt(itemIndex);
+                            addingWordIndicator(itemLetter);
+                        }
                     } else {
-                        arrY.push(' ');
+                        wordIndicator.remove();
+                    }
+                } else if (item.dataset.y === y) {
+                    arrX.push(itemSymbol);
+                    if (solidWord(arrX)) {
+                        if (item.hasChildNodes()) {
+                            points += parseInt(itemIndex);
+                            addingWordIndicator(itemLetter);
+                        }
+                    } else {
+                        wordIndicator.remove();
+                    }
+                } else if (item.dataset.x === x) {
+                    arrY.push(itemSymbol);
+                    if (solidWord(arrY)) {
+                        if (item.hasChildNodes()) {
+                            points += parseInt(itemIndex);
+                            addingWordIndicator(itemLetter);
+                        }
+                    } else {
+                        wordIndicator.remove();
                     }
                 }
             });
+        } else { // letter was in put in player's slot
+            boxCells.forEach((item) => {
+                let itemSymbol,
+                    itemLetter,
+                    itemIndex;
 
-            if (twoLinesCheckArr[0] !== 0 && center.hasChildNodes()) {
-                defOutput();
-            }
-        } else {
-            tilesInGame.forEach((tile) => {
-                if (twoLinesCheckArr[1] === true) {
-                    if (tile.dataset.y === twoLinesCheckArr[4[0]]) {
-                        arrX.push(tile.childNodes[1].textContent.toLowerCase());
+                if (item.hasChildNodes()) {
+                    itemLetter = item.childNodes[0],
+                        itemSymbol = item.childNodes[0].childNodes[1].textContent.toLowerCase(),
+                        itemIndex = item.childNodes[0].childNodes[3].textContent;
+                } else {
+                    itemSymbol = ' ';
+                }
+
+                if (twoLinesCheckArr[1] === true) { // horizontal word
+                    let horizontalWord = twoLinesCheckArr[3];
+                    if (item.dataset.y === horizontalWord[0]) {
+                        arrX.push(itemSymbol);
+                        if (solidWord(arrX)) {
+                            if (item.hasChildNodes()) {
+                                points += parseInt(itemIndex);
+                                addingWordIndicator(itemLetter);
+                            }
+                        } else {
+                            points -= parseInt(itemIndex);
+                            wordIndicator.remove();
+                        }
                     }
-                } else if (twoLinesCheckArr[2] === true) {
-                    if (tile.dataset.x === twoLinesCheckArr[5[0]]) {
-                        arrY.push(tile.childNodes[1].textContent.toLowerCase());
+                } else if (twoLinesCheckArr[2] === true) { // vertical word
+                    let verticalWord = twoLinesCheckArr[4];
+                    if (item.dataset.x === verticalWord[0]) {
+                        arrY.push(itemSymbol);
+                        if (solidWord(arrY)) {
+                            if (item.hasChildNodes()) {
+                                points += parseInt(itemIndex);
+                                addingWordIndicator(itemLetter);
+                            }
+
+                        } else {
+                            points -= parseInt(itemIndex);
+                            wordIndicator.remove();
+                        }
                     }
                 }
             });
+        };
 
-            if (twoLinesCheckArr[0] !== 0 && center.hasChildNodes()) {
-                defOutput();
-            }
-        }
-    } else {
-        hint.style.color = 'red';
+    } else { // two-line word
+        wordIndicator.remove();
     }
+
+    if (twoLinesCheckArr[0] !== 0 && center.hasChildNodes()) { // one-line word and center element
+        defOutput(); // alerting definition
+    }
+};
+
+const submitingWord = () => {
+
 };
 
 startingTiles();
@@ -333,7 +405,9 @@ const dragStart = function (letter) {
 };
 
 const dragEnd = function (letter) {
-    letter.classList.remove('hide');
+    setTimeout(() => {
+        letter.classList.remove('hide');
+    }, 0);
 };
 
 const dragOver = function (cell, evt) {
@@ -364,6 +438,7 @@ const dragDrop = function (cell, letter) {
         if (!cell.hasChildNodes()) {
             cell.append(letter);
             cell.classList.remove('hovered');
+            wordIndicator.remove();
         } else {
             cell.classList.remove('hovered');
             return;
@@ -380,22 +455,22 @@ submitButton.addEventListener('click', () => {
         lettersArr = [];
 
     slots.forEach((slot) => {
-        // console.log(slot.hasChildNodes());
         if (slot.hasChildNodes()) {
             lettersArr.push(slot.childNodes[0].childNodes[1].textContent);
         } else {
             lettersArr.push('');
         }
     });
-    console.log(lettersArr);
+    submitingWord();
     addingTilesIntoArr(lettersArr);
 });
 
 let letterUsed;
 
 (() => setInterval(() => {
-    letters = document.querySelectorAll('.slot .letter'),
-    slots = document.querySelectorAll('.slot');
+    letters = document.querySelectorAll('.letter'),
+        slots = document.querySelectorAll('.slot');
+
     letters.forEach(letter => {
         letter.addEventListener('dragstart', () => {
             letterUsed = letter;
@@ -405,7 +480,7 @@ let letterUsed;
             dragEnd(letter);
         });
     });
-    
+
     slots.forEach(slot => {
         slot.addEventListener('dragover', () => {
             dragOver(slot, event);
