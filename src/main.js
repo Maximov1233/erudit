@@ -9,7 +9,7 @@ import {
 
 // adding cells
 
-const tripleWord = [0, 7, 14, 105, 119, 210, 224],
+const tripleWord = [0, 7, 14, 105, 119, 210, 217, 224],
     doubleLetter = [3, 11, 36, 38, 45, 52, 59, 92, 96, 98, 102, 108, 116, 122, 126, 128, 132, 165, 172, 179, 186, 188, 213, 221],
     doubleWord = [16, 28, 32, 42, 48, 56, 64, 70, 154, 160, 168, 176, 182, 192, 196, 208],
     tripleLetter = [20, 24, 76, 80, 84, 88, 136, 140, 144, 148, 200, 204];
@@ -28,20 +28,27 @@ const availableLetters = document.querySelector('.available-letters'),
     bagItems = document.querySelector('.bag-items'),
     bagTitle = document.querySelector('.bag-title'),
     bagModal = document.querySelector('.bag-modal__bg'),
+    historyTitle = document.querySelector('.history-title'),
+    historyList = document.querySelector('.history-list'),
     submitButton = document.querySelector('.submit-button'),
+    wordIndicator = document.createElement('div'),
     hint = document.querySelector('.hints'),
     bagClose = document.querySelector('.bag-close'),
+    wrongWordModal = document.querySelector('.wrong-word__modal__bg'),
+    wrongWordModalText = wrongWordModal.querySelector('.words'),
     center = boxCells[112];
 
 center.classList.add('star');
+wordIndicator.classList.add('word-indicator');
 
-let points = 0;
+let points = 0,
+    wordX,
+    wordY,
+    word;
 
-
-
-const emptyChecker = (arr) => {
+const emptyChecker = (arr, comparing) => {
     let checker = arr.every((elem) => {
-        return elem !== ' ';
+        return elem !== comparing;
     });
     return checker;
 };
@@ -79,7 +86,7 @@ for (let i = 0; i < boxCells.length; i++) {
 
 // functions
 
-const fillingBag = () => {
+const fillingBag = () => { // fills the bag in sidebar
     for (let key in alphabet) {
         const bagItem = document.createElement('div');
         bagItem.classList.add('bag-item');
@@ -98,7 +105,7 @@ fillingBag();
 
 const tilesInBag = document.querySelectorAll('.bag-item .letter');
 
-const tilesBagChecker = (symbol) => {
+const tilesBagChecker = (symbol) => { // checks if the letter is available in bag
     let checker;
     for (let i = 0; i < tilesInBag.length; i++) {
         if (tilesInBag[i].childNodes[1].textContent === symbol) {
@@ -114,19 +121,19 @@ const tilesBagChecker = (symbol) => {
     return checker;
 };
 
-const randomProperty = (obj) => {
+const randomProperty = (obj) => { // return random key from object
     const keys = Object.keys(obj);
     return obj[keys[keys.length * Math.random() << 0]];
 };
 
-const getRandomIntInclusive = (min, max) => {
+const getRandomIntInclusive = (min, max) => { // returns random number in iclusive range
     min = Math.ceil(min);
     max = Math.floor(max);
     let number = Math.floor(Math.random() * (max - min + 1)) + min;
     return number;
 };
 
-const shuffle = (arr) => {
+const shuffle = (arr) => { // suffles the array
     for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -134,9 +141,8 @@ const shuffle = (arr) => {
     return arr;
 }
 
-const appendingTiles = (arr) => {
+const appendingTiles = (arr) => { // appends tiles into available letters
     let slots = document.querySelectorAll('.slot');
-    // console.log(arr);
     if (slots.length === 0) {
         arr.forEach((item) => {
             const slot = document.createElement('div');
@@ -167,10 +173,9 @@ const appendingTiles = (arr) => {
     }
 };
 
-const addingTilesIntoArr = (arr, isStart) => {
-
+const addingTilesIntoArr = (arr, isStart) => { // adds missing symbols
     if (isStart === true) {
-        while (arr.length !== 7) {
+        while (arr.length !== 8) {
             const symbol = randomProperty(alphabet).symbol;
             if (tilesBagChecker(symbol) === true) {
                 arr.push(symbol);
@@ -178,13 +183,12 @@ const addingTilesIntoArr = (arr, isStart) => {
         }
         arr = shuffle(arr);
     } else {
-        while (emptyChecker(arr) === false) {
+        while (emptyChecker(arr, '') === false) {
             for (let i = 0; i < arr.length; i++) {
                 if (arr[i] === '') {
                     const symbol = randomProperty(alphabet).symbol;
                     if (tilesBagChecker(symbol) === true) {
                         arr.splice(i, 1, symbol);
-                        // console.log(arr);
                     }
                 }
             }
@@ -193,7 +197,7 @@ const addingTilesIntoArr = (arr, isStart) => {
     appendingTiles(arr);
 };
 
-const startingTiles = () => {
+const startingTiles = () => { // creates letter in first move
     let firstLetters = [];
 
     for (let key in dictionary) {
@@ -213,13 +217,13 @@ const startingTiles = () => {
     addingTilesIntoArr(startingTilesArr, true);
 };
 
-const twoLinesCheck = () => {
+const twoLinesCheck = () => { // checks how letter is written
     let arrX = [],
         arrY = [],
         x,
         y;
 
-    const tilesInGame = document.querySelectorAll('.box .letter');
+    const tilesInGame = document.querySelectorAll('.box .letter[draggable=true]');
 
     tilesInGame.forEach((tile) => {
         x = tile.parentNode.dataset.x;
@@ -240,51 +244,122 @@ const twoLinesCheck = () => {
     return [lineChecker, sameValues(arrX, y), sameValues(arrY, x), arrX, arrY];
 };
 
-const solidWord = (arr) => {
-    if (arr.join('').trim('').length >= 3) {
-        arr = [...arr.join('').trim('')];
-        return emptyChecker(arr);
+const solidWord = (arr) => { // checks if word has no spaces
+    if (arr.join('').trim(' ').length >= 3) {
+        arr = [...arr.join('').trim(' ')];
+        return emptyChecker(arr, ' ');
     } else {
         return true;
     }
 };
 
-const wordIndicator = document.createElement('div');
-wordIndicator.classList.add('word-indicator');
+const biggestNumber = (arr) => {
+    console.log(arr);
+    let num = 1;
+    arr.forEach((item) => {
+        if (item > num) {
+            num = item;
+        }
+    });
+    return num;
+};
 
-const checkWord = (cell) => {
+const checkWord = (cell) => { // checks the word for definition and adds word indicator
     let x = cell.dataset.x,
         y = cell.dataset.y,
         definition,
         checker = 0,
         arrX = [],
         arrY = [],
-        wordX,
-        wordY;
+        wordMultiplier,
+        letterMultiplier;
 
     points = 0;
 
+    let wordMultiplierArr = [];
+
+    let tilesInGame = document.querySelectorAll('.box .letter[draggable=true]');
+
+    if (tilesInGame.length <= 1) tilesInGame = '';
+
     const defOutput = () => {
-        for (let key in dictionary) {
-            if (key === arrX.join('').trim(' ') || key === arrY.join('').trim(' ')) {
+        if (arrX.join('').trim(' ').length >= 2 && arrY.join('').trim(' ').length >= 2) {
+            let firstWord,
+            secondWord;
+            for (let key in dictionary) {
+                if (key === arrX.join('').trim(' ')) {
+                    firstWord = key;
+                }
+                if (key === arrY.join('').trim(' ')) {
+                    secondWord = key;
+                }
+            }
+            console.log(firstWord);
+            console.log(secondWord);
+            if (secondWord && firstWord) {
                 checker++;
                 definition = key + '- ' + dictionary[key].definition;
-                console.log(definition);
+                word = definition;
                 wordIndicator.style.background = 'green';
+            }
+        } else {
+            for (let key in dictionary) {
+                if (key === arrX.join('').trim(' ') || key === arrY.join('').trim(' ')) {
+                    checker++;
+                    definition = key + '- ' + dictionary[key].definition;
+                    word = definition;
+                    wordIndicator.style.background = 'green';
+                }
             }
         }
     };
 
     let twoLinesCheckArr = twoLinesCheck();
+    console.log(twoLinesCheckArr);
 
     const addingWordIndicator = (word) => {
+        console.log(biggestNumber(wordMultiplierArr));
         wordIndicator.innerHTML = `
-        <p>${points}</p>
+        <p>${points * biggestNumber(wordMultiplierArr)}</p>
         `;
         word.append(wordIndicator);
     };
 
-    if (twoLinesCheckArr[0] !== 0) { // word is written in one line
+    if (tilesInGame.length === 0) {
+        console.log('a');
+        wordIndicator.remove();
+    }
+
+    const LetterMultiplier = (item) => {
+        if (item.classList.contains('triple-letter')) {
+            letterMultiplier = 3;
+        } else if (item.classList.contains('double-letter')) {
+            letterMultiplier = 2;
+        } else letterMultiplier = 1;
+        return letterMultiplier;
+    };
+
+    const WordMultiplier = (item) => {
+        if (item.classList.contains('triple-word')) {
+            wordMultiplier = 3;
+        } else if (item.classList.contains('double-word')) {
+            wordMultiplier = 2;
+        } else wordMultiplier = 1;
+        return wordMultiplier;
+    };
+
+    const nameFunc = (item, index, letter) => {
+        wordMultiplierArr.push(WordMultiplier(item));
+        points += parseInt(index) * LetterMultiplier(item);
+        addingWordIndicator(letter); // appending word indicator    
+    };
+
+    const slotsLetterRemoverFunc = (index, item) => {
+        // points -= parseInt(index) * LetterMultiplier(item);
+        wordIndicator.remove();
+    };
+
+    if (twoLinesCheckArr[0] !== 0 && center.hasChildNodes()) { // word is written in one line
         wordIndicator.style.background = '';
 
         if (cell.classList.contains('box-cell')) { // letter was put in box cell
@@ -293,7 +368,7 @@ const checkWord = (cell) => {
                     itemLetter,
                     itemIndex;
 
-                if (item.hasChildNodes()) {
+                if (item.hasChildNodes()) { // cell has letter
                     itemLetter = item.childNodes[0],
                         itemSymbol = item.childNodes[0].childNodes[1].textContent.toLowerCase(),
                         itemIndex = item.childNodes[0].childNodes[3].textContent;
@@ -301,46 +376,47 @@ const checkWord = (cell) => {
                     itemSymbol = ' ';
                 }
 
-                if (item.dataset.y === y && item.dataset.x === x) {
+                if (item.dataset.y === y && item.dataset.x === x) { // letter is in center
                     arrX.push(itemSymbol);
                     arrY.push(itemSymbol);
-                    if (solidWord(arrX) && solidWord(arrY)) {
+                    if (solidWord(arrX) || solidWord(arrY)) {
                         if (item.hasChildNodes()) {
-                            points += parseInt(itemIndex);
-                            addingWordIndicator(itemLetter);
+                            nameFunc(item, itemIndex, itemLetter);
                         }
                     } else {
                         wordIndicator.remove();
                     }
-                } else if (item.dataset.y === y) {
+
+                } else if (item.dataset.y === y) { // horizontal word
                     arrX.push(itemSymbol);
-                    if (solidWord(arrX)) {
+                    if (solidWord(arrX)) { // word without spaces
                         if (item.hasChildNodes()) {
-                            points += parseInt(itemIndex);
-                            addingWordIndicator(itemLetter);
+                            nameFunc(item, itemIndex, itemLetter);
                         }
                     } else {
                         wordIndicator.remove();
                     }
-                } else if (item.dataset.x === x) {
+                } else if (item.dataset.x === x) { // vertical word
                     arrY.push(itemSymbol);
-                    if (solidWord(arrY)) {
+                    if (solidWord(arrY)) { // word without spaces
                         if (item.hasChildNodes()) {
-                            points += parseInt(itemIndex);
-                            addingWordIndicator(itemLetter);
+                            nameFunc(item, itemIndex, itemLetter);
                         }
                     } else {
                         wordIndicator.remove();
                     }
                 }
             });
+
         } else { // letter was in put in player's slot
+        let horizontalWord = twoLinesCheckArr[3];
+        let verticalWord = twoLinesCheckArr[4];
             boxCells.forEach((item) => {
                 let itemSymbol,
                     itemLetter,
                     itemIndex;
 
-                if (item.hasChildNodes()) {
+                if (item.hasChildNodes()) { // cell has letter
                     itemLetter = item.childNodes[0],
                         itemSymbol = item.childNodes[0].childNodes[1].textContent.toLowerCase(),
                         itemIndex = item.childNodes[0].childNodes[3].textContent;
@@ -348,50 +424,71 @@ const checkWord = (cell) => {
                     itemSymbol = ' ';
                 }
 
-                if (twoLinesCheckArr[1] === true) { // horizontal word
-                    let horizontalWord = twoLinesCheckArr[3];
+                if (twoLinesCheckArr[1] === true && twoLinesCheckArr[2] === true) {
+                    console.log(horizontalWord[0], verticalWord[0]);
+                    if (item.dataset.y === horizontalWord[0]) {
+                        arrX.push(itemSymbol);              
+                    }
+                    if (item.dataset.x === verticalWord[0]) {
+                        arrY.push(itemSymbol);  
+                    }
+
+                    if (item.dataset.y === horizontalWord[0] || item.dataset.x === verticalWord[0]) {
+                        if (arrX.join('').trim(' ') && arrY.join('').trim(' ')) {
+                            if (solidWord(arrX) && solidWord(arrY)) { // word without spaces
+                                if (item.hasChildNodes()) {
+                                    nameFunc(item, itemIndex, itemLetter);
+                                }
+                            } else {
+                                wordIndicator.remove();
+                            } 
+                        }      
+                    }                
+                }  else if (twoLinesCheckArr[1] === true) { // horizontal word
                     if (item.dataset.y === horizontalWord[0]) {
                         arrX.push(itemSymbol);
-                        if (solidWord(arrX)) {
+                        if (solidWord(arrX)) { // word without spaces
                             if (item.hasChildNodes()) {
-                                points += parseInt(itemIndex);
-                                addingWordIndicator(itemLetter);
+                                nameFunc(item, itemIndex, itemLetter);
                             }
                         } else {
-                            points -= parseInt(itemIndex);
-                            wordIndicator.remove();
+                            slotsLetterRemoverFunc(itemIndex, item);
                         }
                     }
                 } else if (twoLinesCheckArr[2] === true) { // vertical word
-                    let verticalWord = twoLinesCheckArr[4];
                     if (item.dataset.x === verticalWord[0]) {
                         arrY.push(itemSymbol);
-                        if (solidWord(arrY)) {
+                        if (solidWord(arrY)) { // word without spaces
                             if (item.hasChildNodes()) {
-                                points += parseInt(itemIndex);
-                                addingWordIndicator(itemLetter);
+                                nameFunc(item, itemIndex, itemLetter);
                             }
-
                         } else {
-                            points -= parseInt(itemIndex);
-                            wordIndicator.remove();
+                            slotsLetterRemoverFunc(itemIndex, item);
                         }
                     }
                 }
             });
         };
-
+        console.log(points);
+        defOutput(); // alerting definition
     } else { // two-line word
         wordIndicator.remove();
     }
+    wordX = arrX.join('').trim(' ');
+    wordY = arrY.join('').trim(' ');
 
-    if (twoLinesCheckArr[0] !== 0 && center.hasChildNodes()) { // one-line word and center element
-        defOutput(); // alerting definition
-    }
+    console.log(arrX);
+    console.log(arrY);
+    console.log(biggestNumber(wordMultiplierArr));
 };
 
-const submitingWord = () => {
-
+const submitingWord = () => { // checks if the word exists
+    console.log(word);
+    if (!word) {
+        return false;
+    } else {
+        return true;
+    }
 };
 
 startingTiles();
@@ -425,29 +522,17 @@ const dragLeave = function (cell) {
 };
 
 const dragDrop = function (cell, letter) {
-    if (letter.parentNode.classList.contains('box-cell')) {
-        if (!cell.hasChildNodes()) {
-            cell.append(letter);
-            cell.classList.remove('hovered');
-        } else {
-            cell.classList.remove('hovered');
-            return;
-        }
+    if (!cell.hasChildNodes()) {
+        cell.append(letter);
         checkWord(cell);
     } else {
-        if (!cell.hasChildNodes()) {
-            cell.append(letter);
-            cell.classList.remove('hovered');
-            wordIndicator.remove();
-        } else {
-            cell.classList.remove('hovered');
-            return;
-        }
-        checkWord(letter.parentNode);
+        return;
     }
+    cell.classList.remove('hovered');
+    letterUsed = '';
 };
 
-let letters = document.querySelectorAll('.available-letters .letter'),
+let letters = document.querySelectorAll('.letter[draggable=true]'),
     slots = document.querySelectorAll('.slot');
 
 submitButton.addEventListener('click', () => {
@@ -462,17 +547,35 @@ submitButton.addEventListener('click', () => {
         }
     });
     submitingWord();
-    addingTilesIntoArr(lettersArr);
+    if (submitingWord()) {
+        historyList.insertAdjacentHTML('beforeend', `<p>${word}<p>`);
+        let tilesInGame = document.querySelectorAll('.box .letter');
+        tilesInGame.forEach((tile) => {
+            tile.removeAttribute('draggable');
+            tile.classList.add('anti-scroll');
+        });
+        wordIndicator.remove();
+        addingTilesIntoArr(lettersArr);
+        word = '';
+    } else if (!submitingWord() && wordX === '' && wordY === '') {
+        return;
+    } else {
+        wrongWordModalText.innerHTML = `
+        ты тут блять не выдумай слова... нет таких слов "${wordX}" и "${wordY}". Пиши нормальные бл слова
+        `;
+        wrongWordModal.classList.remove('hide');
+    }
 });
 
 let letterUsed;
 
 (() => setInterval(() => {
-    letters = document.querySelectorAll('.letter'),
+    letters = document.querySelectorAll('.letter[draggable=true]'),
         slots = document.querySelectorAll('.slot');
 
     letters.forEach(letter => {
         letter.addEventListener('dragstart', () => {
+            if (!letter.hasAttribute('draggable')) return;
             letterUsed = letter;
             dragStart(letter);
         });
@@ -499,15 +602,19 @@ let letterUsed;
 
 boxCells.forEach(cell => {
     cell.addEventListener('dragover', () => {
+        if (!letterUsed) return;
         dragOver(cell, event);
     });
     cell.addEventListener('dragenter', () => {
+        if (!letterUsed) return;
         dragEnter(cell, event);
     });
     cell.addEventListener('dragleave', () => {
+        if (!letterUsed) return;
         dragLeave(cell);
     });
     cell.addEventListener('drop', () => {
+        if (!letterUsed) return;
         dragDrop(cell, letterUsed);
     });
 });
@@ -516,6 +623,14 @@ bagTitle.addEventListener('click', () => {
     bagModal.classList.remove('hide');
 });
 
-bagClose.addEventListener('click', () => {
-    bagModal.classList.add('hide');
+// bagClose.addEventListener('click', () => {
+//     bagModal.classList.add('hide');
+// });
+
+wrongWordModal.addEventListener('click', () => {
+    wrongWordModal.classList.add('hide');
+});
+
+historyTitle.addEventListener('click', () => {
+    historyList.classList.remove('hide');
 });

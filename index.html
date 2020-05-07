@@ -21,17 +21,27 @@
         
         <div class="sidebar">
             <div class="bag">
-                <p class="bag-title">Tile bag</p>    
+                <p class="sidebar-title bag-title">Tile bag</p>
             </div>
-            <!-- <button>Проверить</button> -->
+            <div class="history">
+                <p class="sidebar-title history-title">History</p>
+                <div class="history-list hide"></div>
+            </div>
+            <div class="bag-items"></div>
         </div>
         <div class="bag-modal__bg hide">
-            <div class="bag-items">
-                <div class="bag-close">X</div>
-            </div>
+          
+                <!-- <div class="modal-close bag-close">X</div> -->
            
         </div>
+        <div class="wrong-word__modal__bg hide">
+            <div class="words">
+                <div class="modal-close">X</div>
+            </div>
+        </div>
     </div>
+    <!-- <a class="checker">aaa</a> -->
+    
     <script type="module" src="./src/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-combinatorics@0.5"></script>
 </body>
